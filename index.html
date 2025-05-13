@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>L&D Production Dashboard</title>
+<title>L&D Production Data</title>
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css">
 <style>
     body { font-family: sans-serif; }
@@ -9,41 +9,69 @@
 </style>
 </head>
 <body>
-<h1>L&D Production Dashboard</h1>
+<h1>L&D Production Data</h1>
 
 <h2>Dashboard</h2>
-<table id="dashboardTable" class="display"></table>
+<div id="dashboard">
+    <!-- Dashboard content will be dynamically generated here -->
+</div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script>
     $(document).ready(function() {
-        const sheetId = "1hmQlO3vJ5HzyFzt-oTw8Ejs8vaiDaKQJJlTj-ZPO6J0"; // Replace with your Google Sheet ID
-        const dashboardSheetName = "Dashboard";
+const sheetId = "1hmQlO3vJ5HzyFzt-oTw8Ejs8vaiDaKQJJlTj-ZPO6J0"; // Replace with your Google Sheet ID
+const dataEntrySheetName = "0_Data_entry";
+const teamUtilisationSheetName = "Team_Utilisation";
+const dashboardSheetName = "Dashboard";
 
-        function loadGoogleSheetData(sheetName, tableId) {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
+function loadGoogleSheetData(sheetName, tableId) {
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&sheet=${sheetName}`;
 
-            fetch(url)
-                .then(response => response.text())
-                .then(data => {
-                    const jsonData = JSON.parse(data.substring(47).slice(0, -2)); // Extract JSON from Google Sheets response
-                    const columns = jsonData.table.cols.map(col => ({ title: col.label }));
-                    const dataRows = jsonData.table.rows.map(row => row.c.map(cell => cell ? cell.v : ''));
+    fetch(url)
+        .then(response => response.text())
+        .then(data => {
+            const jsonData = JSON.parse(data.substring(47).slice(0, -2)); // Extract JSON from Google Sheets response
+            const columns = jsonData.table.cols.map(col => ({ title: col.label }));
+            const dataRows = jsonData.table.rows.map(row => row.c.map(cell => cell ? cell.v : ''));
 
-                    $(tableId).DataTable({
-                        data: dataRows,
-                        columns: columns,
-                        "paging": false, // Disable pagination for smaller datasets
-                        "searching": true, // Enable searching/filtering
-                        "ordering": true   // Enable sorting
-                    });
-                })
-                .catch(error => console.error("Error loading data:", error));
-        }
+            $(tableId).DataTable({
+                data: dataRows,
+                columns: columns,
+                dom: 'Bfrtip', // Add buttons for export
+                buttons: [
+                    'copy', 'csv', 'excel', 'pdf', 'print'
+                ]
+            });
+        })
+        .catch(error => console.error("Error loading data:", error));
+}
 
-        loadGoogleSheetData(dashboardSheetName, '#dashboardTable');
-    });
+function loadDashboard(sheetName, dashboardId) {
+    const url = `https://docs.google.com/spreadsheets/d/${1hmQlO3vJ5HzyFzt-oTw8Ejs8vaiDaKQJJlTj-ZPO6J0}/gviz/tq?tqx=out:json&sheet=${Dashboard}`;
+
+    fetch(url)
+        .then(response => response.text())
+        .then(data => {
+            const jsonData = JSON.parse(data.substring(47).slice(0, -2)); // Extract JSON from Google Sheets response
+            const dataRows = jsonData.table.rows.map(row => row.c.map(cell => cell ? cell.v : ''));
+
+            //Basic implementation - adjust to match your Dashboard structure
+            let dashboardHTML = "<ul>";
+            dataRows.forEach(row => {
+                dashboardHTML += `<li>${row.join(", ")}</li>`;
+            });
+            dashboardHTML += "</ul>";
+
+            $(dashboardId).html(dashboardHTML);
+        })
+        .catch(error => console.error("Error loading dashboard data:", error));
+}
+
+loadGoogleSheetData(dataEntrySheetName, '#dataEntryTable');
+loadGoogleSheetData(teamUtilisationSheetName, '#teamUtilisationTable');
+loadDashboard(dashboardSheetName, '#dashboard');
+});
 </script>
 </body>
 </html>
